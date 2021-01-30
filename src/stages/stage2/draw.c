@@ -293,8 +293,6 @@ void stage2_draw(void) {
 
 void stage2_drawsys_init(void) {
 	stage3d_init(&stage_3d_context, 16);
-	stage_3d_context.cam.near = 1;
-	stage_3d_context.cam.far = 60;
 	stage2_draw_data = calloc(1, sizeof(*stage2_draw_data));
 }
 
