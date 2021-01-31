@@ -113,13 +113,27 @@ static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 
 static void stage6_towertop_draw(vec3 pos) {
+	
+	r_state_push();
 	r_uniform_sampler("tex", "stage6/towertop");
 
 	r_mat_mv_push();
+	//r_cull(CULL_BOTH);
+	r_shader_standard();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 	r_mat_mv_scale(28,28,28);
 	r_draw_model("towertop");
+	r_disable(RCAP_CULL_FACE);
+	r_disable(RCAP_DEPTH_WRITE);
+	r_mat_mv_scale(0.7,0.7,1);
+	r_mat_mv_translate(0,0,180/28);
+	//r_mat_mv_translate(stage_3d_context.cam.pos[0], stage_3d_context.cam.pos[1], stage_3d_context.cam.pos[2]);
+	r_shader("calabi-yau-quintic");
+	r_mat_mv_rotate(global.frames*0.01,1,0,0);
+	r_uniform_float("alpha", global.frames*0.02);
+	r_draw_model("stage6/calabi-yau-quintic");
 	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static uint stage6_skysphere_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -131,11 +145,12 @@ static void stage6_skysphere_draw(vec3 pos) {
 	r_state_push();
 
 	r_disable(RCAP_DEPTH_TEST);
-	ShaderProgram *s = r_shader_get("stage6_sky");
-	r_shader_ptr(s);
+	r_shader("stage6_sky");
+	r_uniform_sampler("tex", "stage6/sky");
 
 	r_mat_mv_push();
-	r_mat_mv_translate(pos[0], pos[1], pos[2] - 30);
+	r_mat_mv_translate_v(stage_3d_context.cam.pos);
+	r_mat_mv_rotate(90,0,0,1);
 	r_mat_mv_scale(150, 150, 150);
 	r_draw_model("skysphere");
 
