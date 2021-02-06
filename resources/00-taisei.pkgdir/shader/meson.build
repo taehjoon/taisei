@@ -67,6 +67,8 @@ glsl_files = files(
     'sprite_silhouette.vert.glsl',
     'sprite_yinyang.frag.glsl',
     'sprite_youmu_myon_shot.frag.glsl',
+    'ssr.vert.glsl',
+    'ssr_water.frag.glsl',
     'stage1_water.frag.glsl',
     'stage6_sky.frag.glsl',
     'stage6_sky.vert.glsl',
