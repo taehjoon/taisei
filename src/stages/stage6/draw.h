@@ -26,8 +26,9 @@ typedef struct Stage6DrawData {
 	} stars;
 
 	struct {
-		int frames;
-	} fall_over;
+		float angular_velocity;
+		float radius;
+	} stair_ascent;
 
 	struct {
 		Framebuffer *aux_fb;

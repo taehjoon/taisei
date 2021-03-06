@@ -145,6 +145,7 @@ static void stage6_preload(void) {
 
 static void stage6_start(void) {
 	stage6_drawsys_init();
+	stage6_bg_init_fullstage();
 }
 
 static void stage6_end(void) {
@@ -153,7 +154,7 @@ static void stage6_end(void) {
 
 static void stage6_spellpractice_start(void) {
 	stage6_start();
-	skip_background_anim(stage6_update, 3800, &global.timer, &global.frames);
+	stage6_bg_init_spellpractice();
 
 	global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
 	AttackInfo *s = global.stage->spell;
@@ -166,7 +167,6 @@ static void stage6_spellpractice_start(void) {
 		stage_start_bgm("stage6boss_phase2");
 	} else if(s == &stage6_spells.final.theory_of_everything) {
 		start_fall_over();
-		skip_background_anim(stage6_update, 300, &global.timer, &global.frames);
 		stage_start_bgm("stage6boss_phase3");
 	} else {
 		stage_start_bgm("stage6boss_phase2");
@@ -189,7 +189,6 @@ StageProcs stage6_procs = {
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.update = stage6_update,
 	.event = stage6_events,
 	.shader_rules = stage6_shaders,
 	.spellpractice_procs = &stage6_spell_procs,
@@ -200,7 +199,6 @@ StageProcs stage6_spell_procs = {
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.update = stage6_update,
 	.event = stage6_spellpractice_events,
 	.shader_rules = stage6_shaders,
 };

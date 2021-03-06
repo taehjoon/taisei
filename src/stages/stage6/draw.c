@@ -11,6 +11,7 @@
 #include "draw.h"
 
 #include "global.h"
+#include "util/glm.h"
 
 MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
@@ -25,7 +26,6 @@ void stage6_drawsys_init(void) {
 	// TODO: make this background slightly less horribly inefficient
 	stage3d_init(&stage_3d_context, 128);
 
-	stage6_draw_data->fall_over.frames = 0;
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		float x,y,z,r;
@@ -44,20 +44,6 @@ void stage6_drawsys_init(void) {
 		stage6_draw_data->stars.position[3*i+2] = z/r;
 	}
 
-	stage_3d_context.cam.aspect = STAGE3D_DEFAULT_ASPECT; // FIXME
-	stage_3d_context.cam.near = 100;
-	stage_3d_context.cam.far = 9000;
-
-	stage_3d_context.cx[1] = -230;
-	stage_3d_context.crot[0] = 90;
-	stage_3d_context.crot[2] = -40;
-
-//	for testing
-//	stage_3d_context.cx[0] = 80;
-//	stage_3d_context.cx[1] = -215;
-//	stage_3d_context.cx[2] = 295;
-//	stage_3d_context.crot[0] = 90;
-//	stage_3d_context.crot[2] = 381.415100;
 
 	FBAttachmentConfig cfg;
 	memset(&cfg, 0, sizeof(cfg));
@@ -91,6 +77,30 @@ uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 
 	return num;
 }
+static void stage6_bg_setup_pbr_lighting(void) {
+	Camera3D *cam = &stage_3d_context.cam;
+
+	vec3 light_pos[] = {
+		{0,10,100},
+	};
+
+	vec3 light_colors[ARRAY_SIZE(light_pos)] = {
+		{10000,10000,10000},
+	};
+
+	mat4 camera_trans;
+	glm_mat4_identity(camera_trans);
+	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
+
+	r_uniform_mat4("camera_transform", camera_trans);
+	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
+	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
+	int light_count = ARRAY_SIZE(light_pos);
+	r_uniform_int("light_count", light_count);
+
+
+	r_uniform_vec3("ambient_color", 1, 1, 1);
+}
 
 void stage6_towerwall_draw(vec3 pos) {
 	r_state_push();
@@ -108,32 +118,64 @@ void stage6_towerwall_draw(vec3 pos) {
 }
 
 static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {0, 0, 70};
+	vec3 p = {0, 0, 0};
 	return single3dpos(s3d, pos, maxrange, p);
 }
 
 static void stage6_towertop_draw(vec3 pos) {
-	
 	r_state_push();
-	r_uniform_sampler("tex", "stage6/towertop");
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+
+	r_shader("pbr");
+	stage6_bg_setup_pbr_lighting();
+
+	r_uniform_float("metallic", 0);
+	r_uniform_sampler("tex", "stage6/stairs_diffuse");
+	r_uniform_sampler("roughness_map", "stage6/stairs_roughness");
+	r_uniform_sampler("normal_map", "stage6/stairs_normal");
+	r_uniform_sampler("ambient_map", "stage6/stairs_ambient");
+	r_draw_model("stage6/stairs");
+
+	r_uniform_sampler("tex", "stage6/tower_diffuse");
+	r_uniform_sampler("roughness_map", "stage6/tower_roughness");
+	r_uniform_sampler("normal_map", "stage6/tower_normal");
+	r_uniform_sampler("ambient_map", "stage6/tower_ambient");
+	r_draw_model("stage6/tower");
 
 	r_mat_mv_push();
-	//r_cull(CULL_BOTH);
-	r_shader_standard();
-	r_mat_mv_translate(pos[0], pos[1], pos[2]);
-	r_mat_mv_scale(28,28,28);
-	r_draw_model("towertop");
+	r_mat_mv_rotate(M_TAU/12, 0, 0, 1);
+	r_uniform_sampler("tex", "stage6/rim_diffuse");
+	r_uniform_sampler("roughness_map", "stage6/rim_roughness");
+	r_uniform_sampler("normal_map", "stage6/rim_normal");
+	r_uniform_sampler("ambient_map", "stage6/rim_ambient");
+	r_draw_model("stage6/rim");
+
+	r_shader("envmap_reflect");
+	r_uniform_sampler("tex", "stage6/sky");
+	
+	mat4 camera_trans, inv_camera_trans;
+	glm_mat4_identity(camera_trans);
+	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
+	glm_mat4_inv_fast(camera_trans, inv_camera_trans);
+	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
+
+	r_draw_model("stage6/spire_spike");
+	r_mat_mv_pop();
+	
+	r_draw_model("stage6/top_plate");
+
 	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_WRITE);
-	r_mat_mv_scale(0.7,0.7,1);
-	r_mat_mv_translate(0,0,180/28);
+	r_mat_mv_translate(0,0,6);
+	r_mat_mv_scale(0.7,0.7,0.7);
 	//r_mat_mv_translate(stage_3d_context.cam.pos[0], stage_3d_context.cam.pos[1], stage_3d_context.cam.pos[2]);
 	r_shader("calabi-yau-quintic");
-	r_mat_mv_rotate(global.frames*0.01,1,0,0);
-	r_uniform_float("alpha", global.frames*0.02);
+	r_mat_mv_rotate(-global.frames*0.03,0,0,1);
+	r_uniform_float("alpha", global.frames*0.03);
 	r_draw_model("stage6/calabi-yau-quintic");
 	r_mat_mv_pop();
-	r_state_pop();
+	r_state_pop();	
 }
 
 static uint stage6_skysphere_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -151,7 +193,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 	r_mat_mv_push();
 	r_mat_mv_translate_v(stage_3d_context.cam.pos);
 	r_mat_mv_rotate(90,0,0,1);
-	r_mat_mv_scale(150, 150, 150);
+	r_mat_mv_scale(50, 50, 50);
 	r_draw_model("skysphere");
 
 	r_shader("sprite_default");
@@ -178,10 +220,10 @@ void stage6_draw(void) {
 	Stage3DSegment segs[] = {
 		{ stage6_skysphere_draw, stage6_skysphere_pos },
 		{ stage6_towertop_draw, stage6_towertop_pos },
-		{ stage6_towerwall_draw, stage6_towerwall_pos },
+	//	{ stage6_towerwall_draw, stage6_towerwall_pos },
 	};
 
-	stage3d_draw(&stage_3d_context, 10000, ARRAY_SIZE(segs), segs);
+	stage3d_draw(&stage_3d_context, 100, ARRAY_SIZE(segs), segs);
 }
 
 static void draw_baryon_connector(cmplx a, cmplx b) {

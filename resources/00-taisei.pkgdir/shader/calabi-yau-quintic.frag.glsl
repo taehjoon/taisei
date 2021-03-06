@@ -4,5 +4,5 @@
 #include "interface/standard.glslh"
 
 void main(void) {
-	fragColor = vec4(texCoord, 1, 0.1);
+	fragColor = 0.2*vec4(texCoord, 1, 0);
 }

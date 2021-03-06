@@ -14,6 +14,8 @@
 #include "coroutine.h"
 
 void start_fall_over(void);
-void stage6_update(void);
+
+void stage6_bg_init_fullstage(void);
+void stage6_bg_init_spellpractice(void);
 
 #endif // IGUARD_stages_stage6_background_anim_h

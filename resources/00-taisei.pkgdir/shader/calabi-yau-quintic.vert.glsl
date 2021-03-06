@@ -45,9 +45,6 @@ void main(void) {
 
 	vec3 zpos = vec3(z2.x, cos(alpha)*z1.y + sin(alpha)*z2.y, z1.x);
 
-	//zpos.x -= 1;
-	//zpos.y += 1.5;
-	//zpos.z -= 0.8;
 
 	gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(zpos,1);
 
