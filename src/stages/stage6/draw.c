@@ -79,7 +79,7 @@ uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 static void stage6_bg_setup_pbr_lighting(void) {
 	Camera3D *cam = &stage_3d_context.cam;
-
+	
 	vec3 light_pos[] = {
 		{0,10,100},
 	};
@@ -93,6 +93,7 @@ static void stage6_bg_setup_pbr_lighting(void) {
 	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
 
 	r_uniform_mat4("camera_transform", camera_trans);
+
 	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
 	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
 	int light_count = ARRAY_SIZE(light_pos);
@@ -127,8 +128,15 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 
-	r_shader("pbr");
+	r_shader("pbr_envmap");
 	stage6_bg_setup_pbr_lighting();
+	r_uniform_sampler("envmap", "stage6/sky");
+
+	mat4 camera_trans, inv_camera_trans;
+	glm_mat4_identity(camera_trans);
+	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
+	glm_mat4_inv_fast(camera_trans, inv_camera_trans);
+	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
 
 	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage6/stairs_diffuse");
@@ -154,10 +162,6 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_shader("envmap_reflect");
 	r_uniform_sampler("tex", "stage6/sky");
 	
-	mat4 camera_trans, inv_camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-	glm_mat4_inv_fast(camera_trans, inv_camera_trans);
 	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
 
 	r_draw_model("stage6/spire_spike");
