@@ -16,13 +16,13 @@
 #include "stageutils.h"
 
 enum {
-	NUM_STARS = 200
+	NUM_STARS = 400
 };
 
 typedef struct Stage6DrawData {
 
 	struct {
-		float position[3*NUM_STARS];
+		vec3 position[NUM_STARS];
 	} stars;
 
 	struct {
@@ -36,6 +36,8 @@ typedef struct Stage6DrawData {
 	} baryon;
 
 } Stage6DrawData;
+
+extern ShaderRule stage6_bg_effects[];
 
 Stage6DrawData* stage6_get_draw_data(void);
 

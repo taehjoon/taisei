@@ -36,12 +36,10 @@ void stage6_drawsys_init(void) {
 			y += nfrand();
 			z += nfrand();
 		} // now x,y,z are approximately gaussian
-		z = fabs(z);
-		r = sqrt(x*x+y*y+z*z);
+		vec3 p = {x, y, z};
 		// normalize them and it’s evenly distributed on a sphere
-		stage6_draw_data->stars.position[3*i+0] = x/r;
-		stage6_draw_data->stars.position[3*i+1] = y/r;
-		stage6_draw_data->stars.position[3*i+2] = z/r;
+		glm_vec3_normalize(p);
+		glm_vec3_copy(p, stage6_draw_data->stars.position[i]);
 	}
 
 
@@ -139,11 +137,13 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
 
 	r_uniform_float("metallic", 0);
+	r_color(RGBA(0.1, 0.1, 0.1, 1));
 	r_uniform_sampler("tex", "stage6/stairs_diffuse");
 	r_uniform_sampler("roughness_map", "stage6/stairs_roughness");
 	r_uniform_sampler("normal_map", "stage6/stairs_normal");
 	r_uniform_sampler("ambient_map", "stage6/stairs_ambient");
 	r_draw_model("stage6/stairs");
+	r_uniform_float("metallic", 0);
 
 	r_uniform_sampler("tex", "stage6/tower_diffuse");
 	r_uniform_sampler("roughness_map", "stage6/tower_roughness");
@@ -151,8 +151,14 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_uniform_sampler("ambient_map", "stage6/tower_ambient");
 	r_draw_model("stage6/tower");
 
+	// optimize: draw tower bottom only after falling off the tower
+	r_uniform_sampler("tex", "stage6/tower_bottom_diffuse");
+	r_uniform_sampler("roughness_map", "stage6/tower_bottom_roughness");
+	r_uniform_sampler("normal_map", "stage6/tower_bottom_normal");
+	r_uniform_sampler("ambient_map", "stage6/tower_bottom_ambient");
+	r_draw_model("stage6/tower_bottom");
+
 	r_mat_mv_push();
-	r_mat_mv_rotate(M_TAU/12, 0, 0, 1);
 	r_uniform_sampler("tex", "stage6/rim_diffuse");
 	r_uniform_sampler("roughness_map", "stage6/rim_roughness");
 	r_uniform_sampler("normal_map", "stage6/rim_normal");
@@ -171,11 +177,11 @@ static void stage6_towertop_draw(vec3 pos) {
 
 	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_WRITE);
-	r_mat_mv_translate(0,0,6);
-	r_mat_mv_scale(0.7,0.7,0.7);
+	r_mat_mv_translate(0, 0, 6);
+	r_mat_mv_scale(0.7, 0.7, 0.7);
 	//r_mat_mv_translate(stage_3d_context.cam.pos[0], stage_3d_context.cam.pos[1], stage_3d_context.cam.pos[2]);
 	r_shader("calabi-yau-quintic");
-	r_mat_mv_rotate(-global.frames*0.03,0,0,1);
+	r_mat_mv_rotate(-global.frames*0.03, 0, 0, 1);
 	r_uniform_float("alpha", global.frames*0.03);
 	r_draw_model("stage6/calabi-yau-quintic");
 	r_mat_mv_pop();
@@ -196,21 +202,27 @@ static void stage6_skysphere_draw(vec3 pos) {
 
 	r_mat_mv_push();
 	r_mat_mv_translate_v(stage_3d_context.cam.pos);
-	r_mat_mv_rotate(90,0,0,1);
 	r_mat_mv_scale(50, 50, 50);
 	r_draw_model("skysphere");
 
 	r_shader("sprite_default");
 
 	for(int i = 0; i < NUM_STARS; i++) {
+		vec3 p;
+		glm_vec3_copy(stage6_draw_data->stars.position[i], p);
+		vec3 axis = { 1, 0, 0.2 };
+		glm_vec3_rotate(p, global.frames*0.001, axis);
+		if(p[2] < 0) {
+			continue;
+		}
+		
 		r_mat_mv_push();
-		float x = stage6_draw_data->stars.position[3*i+0], y = stage6_draw_data->stars.position[3*i+1], z = stage6_draw_data->stars.position[3*i+2];
-		r_mat_mv_translate(x, y, z);
-		r_mat_mv_rotate(acos(stage6_draw_data->stars.position[3*i+2]), -y, x, 0);
-		r_mat_mv_scale(1.0/4000, 1.0/4000, 1.0/4000);
+		r_mat_mv_translate_v(p);
+		r_mat_mv_rotate(acos(p[2]), -p[1], p[0], 0);
+		r_mat_mv_scale(3e-4, 3e-4, 3e-4);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "part/smoothdot",
-			.color = RGBA_MUL_ALPHA(0.9, 0.9, 1.0, 0.8 * z),
+			.color = RGBA_MUL_ALPHA(1, 1, 1, sqrt(p[2])),
 		});
 		r_mat_mv_pop();
 
@@ -387,3 +399,21 @@ void elly_global_rule(Boss *b, int time) {
 	global.boss->glowcolor = *HSL(time/120.0, 1.0, 0.25);
 	global.boss->shadowcolor = *HSLA_MUL_ALPHA((time+20)/120.0, 1.0, 0.25, 0.5);
 }
+
+static bool stage6_fog(Framebuffer *fb) {
+	r_shader("zbuf_fog");
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	r_uniform_vec4_rgba("fog_color", RGB(0.1,0.3,0.8));
+	r_uniform_float("start", 0.2);
+	r_uniform_float("end", 5);
+	r_uniform_float("exponent", 3.0);
+	r_uniform_float("sphereness", 0);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+	r_shader_standard();
+	return true;
+}
+
+ShaderRule stage6_bg_effects[] = {
+	stage6_fog,
+	NULL
+};

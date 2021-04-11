@@ -166,7 +166,7 @@ static void stage6_spellpractice_start(void) {
 		elly_spawn_baryons(global.boss->pos);
 		stage_start_bgm("stage6boss_phase2");
 	} else if(s == &stage6_spells.final.theory_of_everything) {
-		start_fall_over();
+		stage6_bg_start_fall_over();
 		stage_start_bgm("stage6boss_phase3");
 	} else {
 		stage_start_bgm("stage6boss_phase2");
@@ -182,15 +182,13 @@ static void stage6_spellpractice_events(void) {
 	}
 }
 
-ShaderRule stage6_shaders[] = { NULL };
-
 StageProcs stage6_procs = {
 	.begin = stage6_start,
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
 	.event = stage6_events,
-	.shader_rules = stage6_shaders,
+	.shader_rules = stage6_bg_effects,
 	.spellpractice_procs = &stage6_spell_procs,
 };
 
@@ -200,5 +198,5 @@ StageProcs stage6_spell_procs = {
 	.end = stage6_end,
 	.draw = stage6_draw,
 	.event = stage6_spellpractice_events,
-	.shader_rules = stage6_shaders,
+	.shader_rules = stage6_bg_effects,
 };
