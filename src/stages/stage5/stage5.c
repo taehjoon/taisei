@@ -65,7 +65,6 @@ static void stage5_preload(void) {
 		"stage5/spell_bg",
 		"stage5/spell_clouds",
 		"stage5/spell_lightning",
-		"stage5/tower",
 	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage5/stairs_ambient",
@@ -80,6 +79,17 @@ static void stage5_preload(void) {
 		"stage5/metal_normal",
 		"stage5/metal_roughness",
 	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"stage5/stairs",
+		"stage5/wall",
+		"stage5/metal",
+	NULL);
+	
+	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
+		"pbr",
+		"zbuf_fog",
+	NULL);
+
 	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
 		"lasers/linear",
 		"lasers/accelerated",
