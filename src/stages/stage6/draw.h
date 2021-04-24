@@ -51,9 +51,6 @@ void baryon(Enemy*, int, bool);
 extern ShaderRule stage6_bg_effects[];
 extern ShaderRule stage6_postprocess[];
 
-uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange);
-void stage6_towerwall_draw(vec3 pos);
-
 void elly_spellbg_toe(Boss*, int);
 void elly_spellbg_modern_dark(Boss*, int);
 void elly_spellbg_modern(Boss*, int);

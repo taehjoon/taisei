@@ -5,6 +5,7 @@
 #include "interface/standard.glslh"
 
 UNIFORM(1) float alpha;
+VARYING(4) vec3 pos;
 
 vec2 cexp(vec2 z) {
 	return dir(z.y) * exp(z.x);
@@ -47,6 +48,8 @@ void main(void) {
 
 
 	gl_Position = r_projectionMatrix * r_modelViewMatrix * vec4(zpos,1);
+
+	pos = zpos; //(r_modelViewMatrix * vec4(zpos, 1)).xyz;
 
 	texCoord = (r_textureMatrix * vec4(texCoordRawIn, 0.0, 1.0)).xy;
 	texCoordRaw = texCoordRawIn;

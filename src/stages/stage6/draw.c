@@ -61,20 +61,7 @@ void stage6_drawsys_shutdown(void) {
 	free(stage6_draw_data);
 	stage6_draw_data = NULL;
 }
-uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {0, 0, -220};
-	vec3 r = {0, 0, 300};
 
-	uint num = linear3dpos(s3d, pos, maxrange, p, r);
-
-	for(uint i = 0; i < num; ++i) {
-		if(s3d->pos_buffer[i][2] > 0) {
-			s3d->pos_buffer[i][1] = -90000;
-		}
-	}
-
-	return num;
-}
 static void stage6_bg_setup_pbr_lighting(void) {
 	Camera3D *cam = &stage_3d_context.cam;
 	
@@ -101,21 +88,6 @@ static void stage6_bg_setup_pbr_lighting(void) {
 	r_uniform_vec3("ambient_color", 1, 1, 1);
 }
 
-void stage6_towerwall_draw(vec3 pos) {
-	r_state_push();
-
-	r_shader("tower_wall");
-	r_uniform_sampler("tex", "stage6/towerwall");
-
-	r_mat_mv_push();
-	r_mat_mv_translate(pos[0], pos[1], pos[2]);
-	r_mat_mv_scale(30,30,30);
-	r_draw_model("towerwall");
-	r_mat_mv_pop();
-
-	r_state_pop();
-}
-
 static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 0, 0};
 	return single3dpos(s3d, pos, maxrange, p);
@@ -136,8 +108,8 @@ static void stage6_towertop_draw(vec3 pos) {
 	glm_mat4_inv_fast(camera_trans, inv_camera_trans);
 	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
 
-	r_uniform_float("metallic", 0);
-	r_color(RGBA(0.1, 0.1, 0.1, 1));
+	r_uniform_float("metallic", 1);
+	//r_color(RGBA(0.1, 0.1, 0.1, 1));
 	r_uniform_sampler("tex", "stage6/stairs_diffuse");
 	r_uniform_sampler("roughness_map", "stage6/stairs_roughness");
 	r_uniform_sampler("normal_map", "stage6/stairs_normal");
@@ -158,30 +130,35 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_uniform_sampler("ambient_map", "stage6/tower_bottom_ambient");
 	r_draw_model("stage6/tower_bottom");
 
-	r_mat_mv_push();
 	r_uniform_sampler("tex", "stage6/rim_diffuse");
 	r_uniform_sampler("roughness_map", "stage6/rim_roughness");
 	r_uniform_sampler("normal_map", "stage6/rim_normal");
 	r_uniform_sampler("ambient_map", "stage6/rim_ambient");
+	//r_uniform_vec3("ambient_color", 0, 0, 0);
 	r_draw_model("stage6/rim");
+	
+	r_uniform_sampler("tex", "stage6/spires_diffuse");
+	r_uniform_sampler("roughness_map", "stage6/spires_roughness");
+	r_uniform_sampler("normal_map", "stage6/spires_normal");
+	r_uniform_vec3("ambient_color", 0, 0, 0);
+	r_draw_model("stage6/spires");
 
 	r_shader("envmap_reflect");
 	r_uniform_sampler("tex", "stage6/sky");
 	
 	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
 
-	r_draw_model("stage6/spire_spike");
-	r_mat_mv_pop();
 	
 	r_draw_model("stage6/top_plate");
 
 	r_disable(RCAP_CULL_FACE);
-	r_disable(RCAP_DEPTH_WRITE);
+	//r_disable(RCAP_DEPTH_WRITE);
 	r_mat_mv_translate(0, 0, 6);
 	r_mat_mv_scale(0.7, 0.7, 0.7);
 	//r_mat_mv_translate(stage_3d_context.cam.pos[0], stage_3d_context.cam.pos[1], stage_3d_context.cam.pos[2]);
 	r_shader("calabi-yau-quintic");
-	r_mat_mv_rotate(-global.frames*0.03, 0, 0, 1);
+	//r_mat_mv_rotate(-global.frames*0.03, 0, 0, 1);
+	r_mat_mv_rotate(global.frames*0.01, 0, 1, 0);
 	r_uniform_float("alpha", global.frames*0.03);
 	r_draw_model("stage6/calabi-yau-quintic");
 	r_mat_mv_pop();
@@ -189,7 +166,7 @@ static void stage6_towertop_draw(vec3 pos) {
 }
 
 static uint stage6_skysphere_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	return single3dpos(s3d, pos, maxrange, s3d->cx);
+	return single3dpos(s3d, pos, maxrange, s3d->cam.pos);
 }
 
 
@@ -236,7 +213,6 @@ void stage6_draw(void) {
 	Stage3DSegment segs[] = {
 		{ stage6_skysphere_draw, stage6_skysphere_pos },
 		{ stage6_towertop_draw, stage6_towertop_pos },
-	//	{ stage6_towerwall_draw, stage6_towerwall_pos },
 	};
 
 	stage3d_draw(&stage_3d_context, 100, ARRAY_SIZE(segs), segs);
