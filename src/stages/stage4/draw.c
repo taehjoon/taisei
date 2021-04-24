@@ -48,8 +48,8 @@ static bool stage4_water(Framebuffer *fb) {
 	r_shader("ssr_water");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_sampler("tex", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_COLOR0));
-	r_uniform_float("time", global.frames * 0.005);
-	r_uniform_vec2("wave_offset", -global.frames * 0.001, 0);
+	r_uniform_float("time", global.frames * 0.002);
+	r_uniform_vec2("wave_offset", -global.frames * 0.0005, 0);
 	r_color4(0, 0.01, 0.01, 1);
 	r_draw_quad();
 
