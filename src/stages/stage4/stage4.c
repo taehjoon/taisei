@@ -107,6 +107,7 @@ static void stage4_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"pbr",
+		"ssr_water",
 		"zbuf_fog",
 		"sprite_negative",
 	NULL);
