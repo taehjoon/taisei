@@ -3,6 +3,7 @@
 #include "lib/render_context.glslh"
 #include "interface/ssr.glslh"
 #include "lib/util.glslh"
+#include "lib/water.glslh"
 #include "lib/frag_util.glslh"
 
 const int steps = 10;

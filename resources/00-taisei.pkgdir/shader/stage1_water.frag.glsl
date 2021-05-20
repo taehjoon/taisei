@@ -1,6 +1,7 @@
 #version 330 core
 
 #include "lib/util.glslh"
+#include "lib/water.glslh"
 #include "lib/frag_util.glslh"
 #include "interface/standard.glslh"
 
