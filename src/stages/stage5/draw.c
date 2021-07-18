@@ -102,7 +102,7 @@ void stage5_draw(void) {
 static bool stage5_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4_rgba("fog_color", RGB(0.3,0.1,0.8));
+	r_uniform_vec4_rgba("fog_color", color_mul_scalar(RGB(0.3,0.1,0.8), 0.25));
 	r_uniform_float("start", 0.2);
 	r_uniform_float("end", 3.8);
 	r_uniform_float("exponent", 3.0);
