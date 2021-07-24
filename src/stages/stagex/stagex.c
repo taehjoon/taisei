@@ -54,8 +54,9 @@ struct stagex_spells_s stagex_spells = {
 static void stagex_begin(void) {
 	stagex_drawsys_init();
 	stagex_bg_init_fullstage();
+	stage_start_bgm("stagex");
 
-// 	INVOKE_TASK(stagex_timeline);
+	INVOKE_TASK(stagex_timeline);
 }
 
 static void stagex_spellpractice_begin(void) {
@@ -80,17 +81,6 @@ static void stagex_end(void) {
 static void stagex_preload(void) {
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"cell_noise",
-		"stage5/metal_diffuse",
-		"stage5/metal_normal",
-		"stage5/metal_roughness",
-		"stage5/stairs_ambient",
-		"stage5/stairs_diffuse",
-		"stage5/stairs_normal",
-		"stage5/stairs_roughness",
-		"stage5/wall_ambient",
-		"stage5/wall_diffuse",
-		"stage5/wall_normal",
-		"stage5/wall_roughness",
 		"stagex/bg",
 		"stagex/bg_binary",
 		"stagex/code",
@@ -102,6 +92,11 @@ static void stagex_preload(void) {
 		"extra_tower_apply_mask",
 		"extra_tower_mask",
 		"zbuf_fog",
+	NULL);
+	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+		"stage5/metal",
+		"stage5/stairs",
+		"stage5/wall",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"stage5/metal",
