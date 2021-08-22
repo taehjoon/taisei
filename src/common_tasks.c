@@ -362,3 +362,15 @@ DEFINE_EXTERN_TASK(common_easing_animate_vec4) {
 		glm_vec4_add(from, d, *ARGS.value);
 	}
 }
+
+DEFINE_EXTERN_TASK(common_easing_animated) {
+	double from = *ARGS.value;
+	double scale = ARGS.to - from;
+	double ftime = ARGS.duration;
+
+	for(int t = 1; t <= ARGS.duration; t++) {
+		YIELD;
+		*ARGS.value = from + scale * ARGS.ease(t / ftime);
+    }
+}
+
