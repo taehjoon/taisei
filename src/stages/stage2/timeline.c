@@ -348,10 +348,9 @@ TASK(turning_fairy, {
 }) {
 	Enemy *e = TASK_BIND(ARGS.e);
 	e->move = move_linear(ARGS.vel);
-	INVOKE_SUBTASK(common_move_turn,
+	INVOKE_SUBTASK_DELAYED(ARGS.turn_delay, common_move_turn,
 		.move_params = &e->move,
 		.turn_angle = ARGS.turn_angle,
-		.turn_delay = ARGS.turn_delay,
 		.turn_duration = ARGS.turn_duration
 	);
 
@@ -420,10 +419,9 @@ TASK(flea_swirl, {
 }) {
 	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 2)));
 	e->move = move_linear(ARGS.vel);
-	INVOKE_SUBTASK(common_move_turn,
+	INVOKE_SUBTASK_DELAYED(ARGS.turn_delay, common_move_turn,
 		.move_params = &e->move,
 		.turn_angle = ARGS.turn_angle,
-		.turn_delay = ARGS.turn_delay,
 		.turn_duration = ARGS.turn_duration
 	);
 

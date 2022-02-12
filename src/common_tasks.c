@@ -243,11 +243,9 @@ int common_charge_custom(
 
 static void common_move_turn(
 	MoveParams *move,
-	int delay,
 	int duration,
 	real angle
 ) {
-	WAIT(delay);
 	cmplx r = cdir(angle / duration);
 	move->retention *= r;
 	WAIT(duration);
@@ -377,5 +375,5 @@ DEFINE_EXTERN_TASK(common_easing_animate_vec4) {
 }
 
 DEFINE_EXTERN_TASK(common_move_turn) {
-	common_move_turn(ARGS.move_params, ARGS.turn_delay, ARGS.turn_duration, ARGS.turn_angle);
+	common_move_turn(ARGS.move_params, ARGS.turn_duration, ARGS.turn_angle);
 }

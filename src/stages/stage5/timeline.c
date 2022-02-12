@@ -402,11 +402,10 @@ TASK(loop_swirl, {
 	Enemy *e = TASK_BIND(espawn_swirl(ARGS.start, ITEMS(.points = 4, .power = 2)));
 
 	e->move = move_linear(ARGS.velocity);
-	INVOKE_SUBTASK(common_move_turn,
+	INVOKE_SUBTASK_DELAYED(ARGS.turn_delay, common_move_turn,
 		.move_params = &e->move,
 		.turn_angle = ARGS.turn_angle,
 		.turn_duration = ARGS.turn_duration,
-		.turn_delay = ARGS.turn_delay
     );
 
 	int difficulty = 30 - difficulty_value(4, 8, 16, 24);
